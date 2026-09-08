@@ -3,10 +3,15 @@ import argparse
 import shutil
 from pathlib import Path
 from docx import Document
+from dotenv import load_dotenv
+
+from job_search import fetch_recent_jobs
+
+load_dotenv()
 
 # The hidden vault directory
-VAULT_DIR = Path.home() / ".auto-apply"
-MASTER_RESUME_PATH = VAULT_DIR / "master_resume.docx"
+VAULT_DIR = os.getenv("VAULT_DIR")
+MASTER_RESUME_PATH = os.getenv("MASTER_RESUME_PATH")
 
 def setup(resume_file: str):
     """Create the vault and store the master resume."""
@@ -54,12 +59,20 @@ def main():
     # The 'check' command to verify text extraction
     subparsers.add_parser("check", help="Verify the CLI can read the stored resume")
     
+    # Fetch command
+    fetch_parser = subparsers.add_parser("fetch", help="Fetch recent job postings")
+    fetch_parser.add_argument("--role", default="junior software", help="The job title to search for")
+    fetch_parser.add_argument("--location", default="calgary, ab", help="Location (e.g., 'Calgary, Alberta, Canada', or 'Canada')")
+    fetch_parser.add_argument("--time", default="today", choices=["today", "week"], help="Timeframe: 'today' or 'week'")
+    
     args = parser.parse_args()
     
     if args.command == "setup":
         setup(args.resume)
     elif args.command == "check":
         read_vault()
+    elif args.command == "fetch":
+        fetch_recent_jobs(args.role, args.location, args.time)
     else:
         parser.print_help()
 
