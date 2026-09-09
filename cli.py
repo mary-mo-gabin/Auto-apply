@@ -3,16 +3,12 @@ import argparse
 import shutil
 from pathlib import Path
 from docx import Document
-from dotenv import load_dotenv
 
 from job_search import fetch_recent_jobs
 from evaluator import score_jobs, tailor_jobs
 
-load_dotenv()
-
 # The hidden vault directory
-VAULT_DIR = os.getenv("VAULT_DIR")
-MASTER_RESUME_PATH = os.getenv("MASTER_RESUME_PATH")
+from config import VAULT_DIR, MASTER_RESUME_PATH
 
 def setup(resume_file: str):
     """Create the vault and store the master resume."""
