@@ -17,7 +17,7 @@ if not GEMINI_API_KEY:
 client = genai.Client(api_key=GEMINI_API_KEY)
 MODEL_ID = "gemini-3.8-flash"
 
-def triage_job_batch_with_retry(resume_text: str, job_chunk: list, max_retries: int = 3) -> list:
+def triage_job_batch_with_retry(resume_text: str, job_chunk: list) -> list:
     """Evaluates a batch of up to 10 jobs at once, returning a JSON array of scores."""
     print(f"🧠 Scoring a batch of {len(job_chunk)} jobs...")
     
@@ -34,7 +34,8 @@ def triage_job_batch_with_retry(resume_text: str, job_chunk: list, max_retries: 
     {jobs_text}
     """
     
-    for attempt in range(max_retries):
+    retry_delay = 26
+    while True:
         try:
             response = client.models.generate_content(
                 model=MODEL_ID,
@@ -62,17 +63,18 @@ def triage_job_batch_with_retry(resume_text: str, job_chunk: list, max_retries: 
             
         except Exception as e:
             error_msg = str(e)
-            if "429" in error_msg or "503" in error_msg:
-                wait_time = 35
-                print(f"   ⏳ API busy. Sleeping for {wait_time}s before retry {attempt + 1}/{max_retries}...")
-                time.sleep(wait_time)
-            else:
+            if "429" in error_msg:
+                print(f"   ❌ Rate limit reached. Stopping retries: {error_msg}")
+                return []
+            if "503" not in error_msg:
                 print(f"   ❌ Unrecoverable error: {error_msg}")
                 return []
-                
-    return []
 
-def generate_tailored_documents(resume_text: str, job: dict, max_retries: int = 3):
+            print(f"   ⏳ API unavailable. Retrying in {retry_delay}s...")
+            time.sleep(retry_delay)
+            retry_delay = min(retry_delay * 2, 300)
+
+def generate_tailored_documents(resume_text: str, job: dict):
     """Generates the customized Resume and Cover Letter in Markdown."""
     print(f"✍️ Tailoring documents for: {job['company']}...")
     
@@ -95,7 +97,8 @@ def generate_tailored_documents(resume_text: str, job: dict, max_retries: int = 
     ===COVER_LETTER_END===
     """
     
-    for attempt in range(max_retries):
+    retry_delay = 26
+    while True:
         try:
             response = client.models.generate_content(
                 model=MODEL_ID,
@@ -119,11 +122,13 @@ def generate_tailored_documents(resume_text: str, job: dict, max_retries: int = 
         
         except Exception as e:
             error_msg = str(e)
-            if "429" in error_msg or "503" in error_msg:
-                wait_time = 35
-                print(f"   ⏳ API busy. Sleeping for {wait_time}s before document generation retry {attempt + 1}/{max_retries}...: {e}")
-                time.sleep(wait_time)
-            else:
+            if "429" in error_msg:
+                print(f"   ❌ Rate limit reached. Stopping retries: {error_msg}")
+                return
+            if "503" not in error_msg:
                 print(f"   ❌ Failed to generate documents: {error_msg}")
                 return
-    
+
+            print(f"   ⏳ API unavailable. Retrying document generation in {retry_delay}s...")
+            time.sleep(retry_delay)
+            retry_delay = min(retry_delay * 2, 300)
