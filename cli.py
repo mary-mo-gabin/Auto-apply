@@ -6,6 +6,7 @@ from docx import Document
 from dotenv import load_dotenv
 
 from job_search import fetch_recent_jobs
+from evaluator import score_jobs, tailor_jobs
 
 load_dotenv()
 
@@ -62,8 +63,13 @@ def main():
     # Fetch command
     fetch_parser = subparsers.add_parser("fetch", help="Fetch recent job postings")
     fetch_parser.add_argument("--role", default="junior software", help="The job title to search for")
-    fetch_parser.add_argument("--location", default="calgary, ab", help="Location (e.g., 'Calgary, Alberta, Canada', or 'Canada')")
+    fetch_parser.add_argument("--location", default="calgary, alberta, canada", help="Location (e.g., 'Calgary, Alberta, Canada', or 'Canada')")
     fetch_parser.add_argument("--time", default="today", choices=["today", "week"], help="Timeframe: 'today' or 'week'")
+    
+    # Score command
+    subparsers.add_parser("score", help="Score fetched jobs and save them to the vault")
+    # Tailor command
+    subparsers.add_parser("tailor", help="Generate tailored documents for top-scoring jobs")
     
     args = parser.parse_args()
     
@@ -73,6 +79,10 @@ def main():
         read_vault()
     elif args.command == "fetch":
         fetch_recent_jobs(args.role, args.location, args.time)
+    elif args.command == "score":
+        score_jobs()
+    elif args.command == "tailor":
+        tailor_jobs()
     else:
         parser.print_help()
 

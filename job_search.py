@@ -19,7 +19,7 @@ def fetch_recent_jobs(role: str, location: str, time_filter: str):
     """Fetch recent job postings from Google Jobs via SerpApi.
     time_filter options: 'today' (past 24h) or 'week' (past 7 days)
     """
-    print(f"🔍 Searching for '{role}' in '{location}' posted within the last {time_filter}...")
+    print(f"🔍 Searching for '{role}' in '{location}' posted within the last {"24h" if time_filter == "today" else "7 days"}...")
     
     url = "https://api.openwebninja.com/jsearch/search-v2"
     
@@ -29,7 +29,7 @@ def fetch_recent_jobs(role: str, location: str, time_filter: str):
     querystring = {
         "query": f"{role} in {location}",
         "page": "1",
-        "num_pages": "2", # 10 results per page; 2 pages = 20 results in total
+        "num_pages": "1", # 10 results per page; 2 pages = 20 results in total
         "date_posted": date_param
     }
     
