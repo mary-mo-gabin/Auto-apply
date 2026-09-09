@@ -4,13 +4,11 @@ import json
 from pathlib import Path
 from dotenv import load_dotenv
 
-load_dotenv()
-
 # Fetched jobs will be saved into the vault for the AI to read later
-VAULT_DIR = os.getenv("VAULT_DIR")
-JOBS_FILE = os.getenv("JOBS_FILE")
+from config import JOBS_FILE, VAULT_DIR
 
 # Rapid key
+load_dotenv()
 RAPIDAPI_KEY = os.getenv("RAPIDAPI_KEY")
 if not RAPIDAPI_KEY:
     raise ValueError("❌ RAPIDAPI_KEY is missing! Please add it to your .env file.")
