@@ -22,8 +22,8 @@ def score_jobs():
     resume_text = get_master_resume_text()
     scored_jobs = []
 
-    print(f"🚀 Starting evaluation of {len(jobs)} jobs in batches of 10...\n")
-    chunk_size = 10
+    chunk_size = 10          # number of jobs in each batch
+    print(f"🚀 Starting evaluation of {len(jobs)} jobs in batches of {chunk_size}...\n")
     
     for i in range(0, len(jobs), chunk_size):
         chunk = jobs[i:i + chunk_size]
