@@ -21,6 +21,16 @@ def clean_text(value: str) -> str:
     text = html.unescape(value or "")
     text = unicodedata.normalize("NFKC", text)
     text = text.replace("\r\n", " ").replace("\r", " ").replace("\xa0", " ")
+    text = text.translate(str.maketrans({
+        "\u2018": "'",
+        "\u2019": "'",
+        "\u201c": '"',
+        "\u201d": '"',
+        "\u2013": "-",
+        "\u2014": "-",
+        "\u2026": "...",
+    }))
+    text = re.sub(r"[\ud800-\udfff]", "", text)
     text = re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]", "", text)
 
     text = re.sub(r"\s+", " ", text)
