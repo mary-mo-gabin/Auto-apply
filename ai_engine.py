@@ -15,7 +15,7 @@ if not GEMINI_API_KEY:
 
 # Initialize the Gemini Client
 client = genai.Client(api_key=GEMINI_API_KEY)
-MODEL_ID = "gemini-3.7-flash"
+MODEL_ID = "gemini-3.5-flash-lite"
 
 def triage_job_batch_with_retry(resume_text: str, job_chunk: list) -> list:
     """Evaluates a batch of up to 10 jobs at once, returning a JSON array of scores."""
@@ -72,6 +72,7 @@ def triage_job_batch_with_retry(resume_text: str, job_chunk: list) -> list:
 
             print(f"   ⏳ API unavailable. Retrying in {retry_delay}s...")
             time.sleep(retry_delay)
+            retry_delay = min(retry_delay * 2, 180)
 
 def generate_tailored_documents(resume_text: str, job: dict):
     """Generates the customized Resume and Cover Letter in Markdown."""
@@ -115,6 +116,8 @@ def generate_tailored_documents(resume_text: str, job: dict):
             with open(output_dir / "tailored_application.md", "w", encoding="utf-8") as f:
                 f.write(f"# Original job Link: {job['apply_link']}\n\n")
                 f.write(response.text)
+                f.write(job.get("title", ""))
+                f.write("\n\n" + job.get("description", ""))
                 
             print(f"✅ Generated application saved to {output_dir / 'tailored_application.md'}")
             return
@@ -130,3 +133,4 @@ def generate_tailored_documents(resume_text: str, job: dict):
 
             print(f"   ⏳ API unavailable. Retrying document generation in {retry_delay}s...")
             time.sleep(retry_delay)
+            retry_delay = min(retry_delay * 2, 180)
