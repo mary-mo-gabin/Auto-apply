@@ -15,7 +15,7 @@ if not GEMINI_API_KEY:
 
 # Initialize the Gemini Client
 client = genai.Client(api_key=GEMINI_API_KEY)
-MODEL_ID = "gemini-3.8-flash"
+MODEL_ID = "gemini-3.7-flash"
 
 def triage_job_batch_with_retry(resume_text: str, job_chunk: list) -> list:
     """Evaluates a batch of up to 10 jobs at once, returning a JSON array of scores."""
@@ -65,14 +65,13 @@ def triage_job_batch_with_retry(resume_text: str, job_chunk: list) -> list:
             error_msg = str(e)
             if "429" in error_msg:
                 print(f"   ❌ Rate limit reached. Stopping retries: {error_msg}")
-                return []
+                quit()
             if "503" not in error_msg:
                 print(f"   ❌ Unrecoverable error: {error_msg}")
                 return []
 
             print(f"   ⏳ API unavailable. Retrying in {retry_delay}s...")
             time.sleep(retry_delay)
-            retry_delay = min(retry_delay * 2, 300)
 
 def generate_tailored_documents(resume_text: str, job: dict):
     """Generates the customized Resume and Cover Letter in Markdown."""
@@ -131,4 +130,3 @@ def generate_tailored_documents(resume_text: str, job: dict):
 
             print(f"   ⏳ API unavailable. Retrying document generation in {retry_delay}s...")
             time.sleep(retry_delay)
-            retry_delay = min(retry_delay * 2, 300)
